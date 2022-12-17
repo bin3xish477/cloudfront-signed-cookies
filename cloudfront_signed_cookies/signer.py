@@ -33,7 +33,6 @@ class Signer():
             padding.PSS(
                 mgf=padding.MGF1(hashes.SHA384()),
                 salt_length=padding.PSS.MAX_LENGTH
-
             ),
             hashes.SHA384()
         )
@@ -62,7 +61,8 @@ class Signer():
         '''
         return dumps(s).replace(" ", "")
 
-    def generate_cookies(self,
+    def generate_cookies(
+        self,
         Resource: str,
         Policy: dict={},
         SecondsBeforeExpires: int=900
