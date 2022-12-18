@@ -6,12 +6,15 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 
-
-
 class Signer():
     HASH_ALGORITHM = 'SHA-384'
 
     def __init__(self, cloudfront_id: str, priv_key_file: str) -> None:
+        '''
+        Args:
+            cloudfront_id(str): the ID assigned to the public key in CloudFront
+            priv_key_file(str): the path to the private PEM-formatted key
+        '''
         self.cloudfront_id: str = cloudfront_id
         if exists(priv_key_file):
             with open(priv_key_file, mode="rb") as priv_file:
@@ -21,7 +24,7 @@ class Signer():
                     password=None
                 )
         else:
-            raise FileNotFoundError(f"couldn't find private key file: {priv_key_file}")
+            raise FileNotFoundError(f"{priv_key_file} not found")
 
     def _sign(self, policy: str) -> bytes:
         '''
@@ -44,14 +47,16 @@ class Signer():
         uses the `DataLessThan` condition
         '''
         policy = {
-            'Statement': [{
-                'Resource': resource,
-                'Condition': {
-                    'DateLessThan': {
-                        'AWS:EpochTime': expiration_date
+            'Statement': [
+                {
+                    'Resource': resource,
+                    'Condition': {
+                        'DateLessThan': {
+                            'AWS:EpochTime': expiration_date
+                        }
                     }
                 }
-            }]
+            ]
         }
         return self._to_json(policy)
     
@@ -63,27 +68,27 @@ class Signer():
 
     def generate_cookies(
         self,
-        Resource: str,
+        Resource: str="",
         Policy: dict={},
         SecondsBeforeExpires: int=900
     ) -> dict:
         '''
         Args:
             Resource(str): base URL for the resource you want to allow access to
-            Policy(dict): custom policy statement for signed cookie 
+            Policy(dict): custom policy statement for signed cookie
             SecondsBeforeExpires(int): numbers of seconds before cookie expires, default=900 (15 minutes)
 
         Returns:
             dict: returns dict containing the CloudFront-Policy, CloudFront-Signature,
                 and CloudFront-Key-Pair-Id cookies
         '''
-        expires_on: datetime = datetime.now() + timedelta(seconds=SecondsBeforeExpires)
-
         if Policy:
             policy: str = self._to_json(Policy)
         else:
+            if not Resource:
+                raise ValueError("must provide a resource URL")
+            expires_on: datetime = datetime.now() + timedelta(seconds=SecondsBeforeExpires)
             policy: str = self._make_canned_policy(resource=Resource, expiration_date=int(expires_on.timestamp()))
-
         signature: bytes = self._sign(policy)
 
         cookies = {

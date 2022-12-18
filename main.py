@@ -6,10 +6,11 @@ if __name__ == "__main__":
         priv_key_file="./certs/private_key.pem"
     )
 
-    cookies = signer.generate_cookies(
+    cookies: dict = signer.generate_cookies(
         Resource="https://s3.amazonaws.com/somefile.txt",
         Policy={},
         SecondsBeforeExpires=3600
     )
-    print(cookies)
+    cookie_str = "; ".join([f"{k}: {v}" for k, v in cookies.items()])
+    print(f"Set-Cookie: {cookie_str}")
 

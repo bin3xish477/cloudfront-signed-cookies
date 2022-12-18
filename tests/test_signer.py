@@ -1,4 +1,5 @@
 import pytest
+from datetime import datetime
 
 from cloudfront_signed_cookies.signer import Signer
 
@@ -22,4 +23,26 @@ def test_private_key_file_not_exists():
             cloudfront_id="46858301-6fdb-4645-a522-d09b5dea27a5",
             priv_key_file="./certs/file_not_exits.pem"
         )
+        _ = signer
+
+def test_generated_cookies_with_custom_policy():
+    cookies: dict = signer.generate_cookies(
+        Policy={
+            "Statment": [
+                {
+                    "Resource": "https://example.com/somefile.txt",
+                    "Condition": {
+                        "DateLessThan": {
+                            "aws:EpochTime": int(datetime.now().timestamp())
+                        },
+                        "IpAddres": {
+                            "aws:SourceIp": "10.10.10.0/24"
+                        }
+                    }
+                }
+            ]
+        },
+        SecondsBeforeExpires=600
+    )
+    print(cookies)
 
