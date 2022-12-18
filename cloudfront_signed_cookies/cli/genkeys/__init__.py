@@ -1,8 +1,12 @@
 import click
+import logging
 
 from cryptography.hazmat.primitives.asymmetric import rsa
 
-@click.command(context_setting={"ignore_unknown_options": True})
+logging.basicConfig(level=logging.DEBUG)
+
+@click.command(context_settings={"ignore_unknown_options": True})
 @click.option("--key-size", "-s", default=2048)
-def genkeys(key_size: int) -> None:
+@click.pass_context
+def genkeys(ctx: click.Context, key_size: int) -> None:
     pass

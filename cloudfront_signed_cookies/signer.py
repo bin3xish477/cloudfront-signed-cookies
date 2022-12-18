@@ -19,10 +19,7 @@ class Signer():
         if exists(priv_key_file):
             with open(priv_key_file, mode="rb") as priv_file:
                 key_bytes = priv_file.read()
-                self.priv_key = serialization.load_pem_private_key(
-                    key_bytes,
-                    password=None
-                )
+                self.priv_key = serialization.load_pem_private_key(key_bytes, password=None)
         else:
             raise FileNotFoundError(f"{priv_key_file} not found")
 
@@ -76,7 +73,8 @@ class Signer():
         Args:
             Resource(str): base URL for the resource you want to allow access to
             Policy(dict): custom policy statement for signed cookie
-            SecondsBeforeExpires(int): numbers of seconds before cookie expires, default=900 (15 minutes)
+            SecondsBeforeExpires(int): numbers of seconds before cookie expires,
+                default=900 (15 minutes)
 
         Returns:
             dict: returns dict containing the CloudFront-Policy, CloudFront-Signature,
@@ -88,7 +86,10 @@ class Signer():
             if not Resource:
                 raise ValueError("must provide a resource URL")
             expires_on: datetime = datetime.now() + timedelta(seconds=SecondsBeforeExpires)
-            policy: str = self._make_canned_policy(resource=Resource, expiration_date=int(expires_on.timestamp()))
+            policy: str = self._make_canned_policy(
+                resource=Resource,
+                expiration_date=int(expires_on.timestamp())
+            )
         signature: bytes = self._sign(policy)
 
         cookies = {
