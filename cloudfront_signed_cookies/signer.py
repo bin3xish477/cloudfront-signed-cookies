@@ -10,11 +10,12 @@ class Signer():
     HASH_ALGORITHM = 'SHA-384'
 
     def __init__(self, cloudfront_id: str, priv_key_file: str) -> None:
-        '''
+        """Initializes `Signer` object.
+
         Args:
             cloudfront_id(str): the ID assigned to the public key in CloudFront
             priv_key_file(str): the path to the private PEM-formatted key
-        '''
+        """
         self.cloudfront_id: str = cloudfront_id
         if exists(priv_key_file):
             with open(priv_key_file, mode="rb") as priv_file:
@@ -24,10 +25,9 @@ class Signer():
             raise FileNotFoundError(f"{priv_key_file} not found")
 
     def _sign(self, policy: str) -> bytes:
-        '''
-        generates signature from policy and the private key associated
-        with the public key in the CloudFront trusted key group
-        '''
+        """Generate signature from policy and the private key associated
+        with the public key in the CloudFront trusted key group.
+        """
         signature: bytes = self.priv_key.sign(
             policy.encode(),
             padding.PSS(
@@ -39,10 +39,10 @@ class Signer():
         return signature
 
     def _make_canned_policy(self, resource: str, expiration_date: int):
-        '''
-        returns default canned policy for signed cookies which only
-        uses the `DataLessThan` condition
-        '''
+        """
+        Returns default canned policy for signed cookies which only
+        uses the `DataLessThan` condition.
+        """
         policy = {
             'Statement': [
                 {
@@ -58,9 +58,7 @@ class Signer():
         return self._to_json(policy)
     
     def _to_json(self, s: dict) -> str:
-        '''
-        converts dict to JSON string stripped of whitespaces
-        '''
+        """Converts dict to JSON string stripped of whitespaces."""
         return dumps(s).replace(" ", "")
 
     def generate_cookies(
@@ -69,7 +67,8 @@ class Signer():
         Policy: dict={},
         SecondsBeforeExpires: int=900
     ) -> dict:
-        '''
+        """Generate and return signed cookies for accessing content behind CloudFront.
+
         Args:
             Resource(str): base URL for the resource you want to allow access to
             Policy(dict): custom policy statement for signed cookie
@@ -79,7 +78,7 @@ class Signer():
         Returns:
             dict: returns dict containing the CloudFront-Policy, CloudFront-Signature,
                 and CloudFront-Key-Pair-Id cookies
-        '''
+        """
         if Policy:
             policy: str = self._to_json(Policy)
         else:
@@ -99,3 +98,4 @@ class Signer():
         }
 
         return cookies
+
