@@ -39,8 +39,7 @@ class Signer():
         return signature
 
     def _make_canned_policy(self, resource: str, expiration_date: int):
-        """
-        Returns default canned policy for signed cookies which only
+        """Returns default canned policy for signed cookies which only
         uses the `DataLessThan` condition.
         """
         policy = {
