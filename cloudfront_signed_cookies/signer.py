@@ -32,8 +32,7 @@ class Signer:
                 "CloudFront public key ID must be a UUID string"
             )
         else:
-            self.cloudfront_key_id = cloudfront_key_id
-        self.cloudfront_key_id: str = cloudfront_key_id
+            self.cloudfront_key_id: str = cloudfront_key_id
         if exists(priv_key_file):
             with open(priv_key_file, mode="rb") as priv_file:
                 key_bytes = priv_file.read()
