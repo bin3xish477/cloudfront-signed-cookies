@@ -6,7 +6,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 
-from cloudfront_signed_cookies.errors import PrivateKeyNotFound
+from cloudfront_signed_cookies.errors import InvalidCustomPolicy, PrivateKeyNotFound
 
 class Signer():
     HASH_ALGORITHM = 'SHA-384'
@@ -40,7 +40,7 @@ class Signer():
         )
         return signature
     
-    def _validate_custom_policy(self):
+    def _validate_custom_policy(self, policy: dict):
         """Validates custom policy for signed cookie.
 
         Custom policy must match the following schema:
@@ -63,19 +63,64 @@ class Signer():
 			]
 		} 
         """
-        pass
+        conditions, resource = None, None
+        allowed_condition_keys = ["DateLessThan", "DateGreaterThan", "IpAddress"]
+        allowed_condition_key_subkeys = {
+            "DateLessThan": "AWS:EpochTime",
+            "DateGreaterThan": "AWS:EpochTime",
+            "IpAddress": "AWS:SourceIp"
+        }
+        try:
+            statement = policy["Statement"]
+        except KeyError:
+            raise InvalidCustomPolicy("policy is missing Statement") from None
+        if statement:
+            try:
+                conditions = statement[0]["Condition"]
+                resource = statement[0]["Resource"]
+            except KeyError:
+                # ignore KeyError exception if statement was not placed in a list
+                pass
+            try:
+                conditions = statement["Condition"]
+                resource = statement["Resource"]
+            except KeyError:
+                raise InvalidCustomPolicy("missing Condition key in policy statement") from None
+        else:
+            raise InvalidCustomPolicy("policy statement is empty")
+
+        for key in conditions:
+            if key not in allowed_condition_keys:
+                raise InvalidCustomPolicy(f"invalid condition key: {key} " \
+                    "- key must be DateLessThan, DateGreaterThan, or IpAddress")
+            condition_key_value_type = type(conditions[key])
+            if condition_key_value_type == dict:
+                for sub_key in conditions[key]:
+                    if sub_key != allowed_condition_key_subkeys[key]:
+                        raise InvalidCustomPolicy(f"invalid condition key sub-key found: {sub_key}")
+                    condition_key_subkey_value_type = type(conditions[key][sub_key])
+                    if sub_key == "AWS:EpochTime" and condition_key_subkey_value_type != int:
+                        raise InvalidCustomPolicy("AWS:EpochTime value must be of type 'int'"\
+                                f", not {condition_key_subkey_value_type}")
+            else:
+                raise InvalidCustomPolicy("condition key value must be of type 'dict'" \
+                        f", not {condition_key_value_type}")
+
+        resource_type = type(resource)
+        if resource_type != str:
+            raise TypeError(f"provided Resource must be of type 'str', not '{resource_type}'")
 
     def _make_canned_policy(self, resource: str, expiration_date: int):
         """Returns default canned policy for signed cookies which only
         uses the `DataLessThan` condition.
         """
         policy = {
-            'Statement': [
+            "Statement": [
                 {
-                    'Resource': resource,
-                    'Condition': {
-                        'DateLessThan': {
-                            'AWS:EpochTime': expiration_date
+                    "Resource": resource,
+                    "Condition": {
+                        "DateLessThan": {
+                            "AWS:EpochTime": expiration_date
                         }
                     }
                 }
@@ -83,14 +128,16 @@ class Signer():
         }
         return self._to_json(policy)
 
-    def sanitize_b64(self, b64_str: str) -> str:
+    def _sanitize_b64(self, s: str) -> str:
         """Removes invalid characters from final base64-encoded string.
 
         + -> -
         = -> _
         / -> ~
         """
-        pass
+        for k,v in {"+": "-", "=": "_", "/": "~"}.items():
+            s = s.replace(k, v)
+        return s
 
     def _to_json(self, s: dict) -> str:
         """Converts dict to JSON string stripped of whitespaces."""
@@ -115,6 +162,7 @@ class Signer():
                 and CloudFront-Key-Pair-Id cookies
         """
         if Policy:
+            self._validate_custom_policy(Policy)
             policy: str = self._to_json(Policy)
         else:
             if not Resource:
@@ -126,9 +174,11 @@ class Signer():
             )
         signature: bytes = self._sign(policy)
 
+        encoded_policy = b64encode(policy.encode("utf8")).decode()
+        encoded_signature = b64encode(signature).decode()
         cookies = {
-            "CloudFront-Policy": b64encode(policy.encode("utf8")).decode(),
-            "CloudFront-Signature": b64encode(signature).decode(),
+            "CloudFront-Policy": self._sanitize_b64(encoded_policy),
+            "CloudFront-Signature": self._sanitize_b64(encoded_signature),
             "CloudFront-Key-Pair-Id": self.cloudfront_id
         }
 

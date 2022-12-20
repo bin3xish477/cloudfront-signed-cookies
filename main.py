@@ -8,7 +8,7 @@ if __name__ == "__main__":
 
     cookies: dict = signer.generate_cookies(
         Resource="https://s3.amazonaws.com/somefile.txt",
-        Policy={},
+        Policy={"Statement": {"Resource": "some_url", "Condition": {"DateLessThan": {"AWS:EpochTime": "not_int"}}}},
         SecondsBeforeExpires=3600
     )
     cookie_str = "; ".join([f"{k}: {v}" for k, v in cookies.items()])
