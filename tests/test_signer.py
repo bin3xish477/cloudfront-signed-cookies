@@ -1,3 +1,4 @@
+from _pytest.pytester import pytest_addoption
 import pytest
 from datetime import datetime
 
@@ -46,4 +47,7 @@ def test_generated_cookies_with_custom_policy():
     )
     print(cookies)
 
-def test_invalid_custom_policy_
+def test_invalid_custom_policy_keys_and_values():
+    with pytest.raises():
+        pass
+
