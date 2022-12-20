@@ -1,7 +1,9 @@
 import pytest
 from datetime import datetime
 from cloudfront_signed_cookies.signer import Signer
-from cloudfront_signed_cookies.errors import InvalidCustomPolicy, PrivateKeyNotFound
+from cloudfront_signed_cookies.errors import (
+    InvalidCustomPolicy, PrivateKeyNotFound, InvalidCloudFrontKeyId
+)
 
 signer: Signer = Signer(
     cloudfront_key_id="46858301-6fdb-4645-a522-d09b5dea27a5",
@@ -94,7 +96,7 @@ def test_custom_policy_for_invalid_subkeys():
         )
 
 
-def test_custom_policy_for_invalid_subkeys_types():
+def test_custom_policy_for_invalid_subkey_types():
     with pytest.raises(InvalidCustomPolicy):
         signer.generate_cookies(
             Policy={
@@ -107,3 +109,11 @@ def test_custom_policy_for_invalid_subkeys_types():
             },
             SecondsBeforeExpires=600,
         )
+
+def test_for_invalid_cloudfront_key_id():
+    with pytest.raises(InvalidCloudFrontKeyId):
+        Signer(
+            cloudfront_key_id="134041ajfdfadf0",
+            priv_key_file="./certs/private_key.pem"
+        )
+

@@ -3,10 +3,12 @@ from json import dumps
 from datetime import datetime, timedelta
 from base64 import b64encode
 from typing import Union
+from re import match
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
-from cloudfront_signed_cookies.errors import InvalidCustomPolicy, PrivateKeyNotFound
+from cloudfront_signed_cookies.errors import InvalidCloudFrontKeyId, InvalidCustomPolicy, PrivateKeyNotFound
+
 
 
 class Signer:
@@ -19,6 +21,10 @@ class Signer:
             cloudfront_key_id(str): the ID assigned to the public key in CloudFront
             priv_key_file(str): the path to the private PEM-formatted key
         """
+        if not match(r'^[0-9a-f]{8}\b-[0-9a-f]{4}\b-[0-9a-f]{4}\b-[0-9a-f]{4}\b-[0-9a-f]{12}$', cloudfront_key_id):
+            raise InvalidCloudFrontKeyId("CloudFront public key ID must be a UUID string")
+        else:
+            self.cloudfront_key_id = cloudfront_key_id
         self.cloudfront_key_id: str = cloudfront_key_id
         if exists(priv_key_file):
             with open(priv_key_file, mode="rb") as priv_file:
