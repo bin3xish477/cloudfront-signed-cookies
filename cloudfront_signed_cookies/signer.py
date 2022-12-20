@@ -34,11 +34,11 @@ class Signer:
         with the public key in the CloudFront trusted key group.
         """
         signature: bytes = self.priv_key.sign(
-            policy.encode(),
-            padding.PSS(
+            data=policy.encode(),
+            padding=padding.PSS(
                 mgf=padding.MGF1(hashes.SHA384()), salt_length=padding.PSS.MAX_LENGTH
             ),
-            hashes.SHA384(),
+            algorithm=hashes.SHA384(),
         )
         return signature
 
