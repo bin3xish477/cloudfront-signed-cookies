@@ -30,7 +30,7 @@ def main():
         priv_key_file="./certs/private_key.pem",
     )
 
-    cookies: dict = signer.sign(
+    cookies: dict = signer.generate_cookies(
         Resource="https://s3.amazonaws.com/somefile.txt",
         Policy={
             "Statement": [
@@ -48,8 +48,7 @@ def main():
     )
     print(cookies)
 
-if __name__ == "__main__":
-    main()
+main()
 """
 {'CloudFront-Policy': 'eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoic29tZV91cmwiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjEwMDB9fX1dfQ__', 'CloudFront-Signature': 'EZHxOEAhaKB3e-XUAGI5xJdDQaWKuW-h6m8c4UYcFBkaA3Fh4~DygZUcYCj-S-qtUdrl46i8vp4RuvtDz4sL9GEVGGDniZc8iDVDqHmfllMFK-90Ge-C9lQ-umsqm-IQzaFVDS3WMbi5iAsRDpdUGfAk43ergTMvjhd~xxpVCCHZxW8uBt11kAjEoqdbMm6eVC32F-QB2HJndN9mm4d~dizvW~XjVt69fA0YjY7-TiIVKAO5ajnDaBl17AsLolLfLYl6NGBJjadLjueMCWM2DP5lXYce8RF2qW02wg8bNmth3ykPoVHFT-tgIgetOcDFDCFSnTkXXhUy3mu2wPzdKQ__', 'CloudFront-Key-Pair-Id': '46858301-6fdb-4645-a522-d09b5dea27a5'}
 """
