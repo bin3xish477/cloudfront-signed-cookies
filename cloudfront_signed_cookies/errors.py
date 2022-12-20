@@ -9,8 +9,8 @@ class InvalidCustomPolicy(Exception):
 
     pass
 
+
 class InvalidCloudFrontKeyId(Exception):
     """Raised if CloudFront public Id is not a valid UUID str"""
 
     pass
-
