@@ -24,7 +24,7 @@ pip install cloudfront-signed-cookies
 from cloudfront_signed_cookies.signer import Signer
 
 def main():
-    signer: dict = Signer(
+    signer: Signer = Signer(
         cloudfront_key_id="46858301-6fdb-4645-a522-d09b5dea27a5",
         priv_key_file="./certs/private_key.pem",
     )
