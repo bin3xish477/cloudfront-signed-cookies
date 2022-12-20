@@ -1,8 +1,7 @@
-from _pytest.pytester import pytest_addoption
 import pytest
 from datetime import datetime
-
 from cloudfront_signed_cookies.signer import Signer
+from cloudfront_signed_cookies.errors import InvalidCustomPolicy, PrivateKeyNotFound
 
 signer: Signer = Signer(
     cloudfront_id="46858301-6fdb-4645-a522-d09b5dea27a5",
@@ -16,39 +15,95 @@ def test_generate_cookies():
         Policy={},
         SecondsBeforeExpires=3600,
     )
-
     assert cookies != {}
 
 
 def test_private_key_file_not_exists():
-    with pytest.raises(FileNotFoundError):
-        signer: Signer = Signer(
+    with pytest.raises(PrivateKeyNotFound):
+        Signer(
             cloudfront_id="46858301-6fdb-4645-a522-d09b5dea27a5",
             priv_key_file="./certs/file_not_exits.pem",
         )
-        _ = signer
 
 
 def test_generated_cookies_with_custom_policy():
-    cookies: dict = signer.generate_cookies(
+    signer.generate_cookies(
         Policy={
             "Statement": [
                 {
                     "Resource": "https://example.com/somefile.txt",
                     "Condition": {
                         "DateLessThan": {
-                            "aws:EpochTime": int(datetime.now().timestamp())
+                            "AWS:EpochTime": int(datetime.now().timestamp())
                         },
-                        "IpAddres": {"aws:SourceIp": "10.10.10.0/24"},
+                        "IpAddress": {"AWS:SourceIp": "10.10.10.0/24"},
                     },
                 }
             ]
         },
         SecondsBeforeExpires=600,
     )
-    print(cookies)
 
 
-def test_invalid_custom_policy_keys_and_values():
-    with pytest.raises():
-        pass
+def test_custom_policy_for_missing_statement():
+    with pytest.raises(InvalidCustomPolicy):
+        signer.generate_cookies(
+            Policy={"InvalidKey": []},
+            SecondsBeforeExpires=600,
+        )
+
+
+def test_custom_policy_for_incorrect_resource_type():
+    with pytest.raises(InvalidCustomPolicy):
+        signer.generate_cookies(
+            Policy={"Statement": [{"Resource": 1}]},
+            SecondsBeforeExpires=600,
+        )
+
+
+def test_custom_policy_for_missing_conditions():
+    with pytest.raises(InvalidCustomPolicy):
+        signer.generate_cookies(
+            Policy={"Statement": [{"Resource": "URL"}]},
+            SecondsBeforeExpires=600,
+        )
+
+
+def test_custom_policy_for_invalid_keys():
+    with pytest.raises(InvalidCustomPolicy):
+        signer.generate_cookies(
+            Policy={
+                "Statement": [{"Resource": "URL", "Condition": {"InvalidKey": "value"}}]
+            },
+            SecondsBeforeExpires=600,
+        )
+
+
+def test_custom_policy_for_invalid_subkeys():
+    with pytest.raises(InvalidCustomPolicy):
+        signer.generate_cookies(
+            Policy={
+                "Statement": [
+                    {
+                        "Resource": "URL",
+                        "Condition": {"DateLessThan": {"InvalidSubKey": 1000}},
+                    }
+                ]
+            },
+            SecondsBeforeExpires=600,
+        )
+
+
+def test_custom_policy_for_invalid_subkeys_types():
+    with pytest.raises(InvalidCustomPolicy):
+        signer.generate_cookies(
+            Policy={
+                "Statement": [
+                    {
+                        "Resource": "URL",
+                        "Condition": {"DateLessThan": {"AWS:EpochTime": "not_an_int"}},
+                    }
+                ]
+            },
+            SecondsBeforeExpires=600,
+        )

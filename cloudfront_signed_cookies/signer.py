@@ -2,10 +2,10 @@ from os.path import exists
 from json import dumps
 from datetime import datetime, timedelta
 from base64 import b64encode
+from typing import Union
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
-
 from cloudfront_signed_cookies.errors import InvalidCustomPolicy, PrivateKeyNotFound
 
 
@@ -65,31 +65,39 @@ class Signer:
             ]
         }
         """
-        conditions, resource = None, None
+        conditions: dict = {}
+        resource: str = ""
         allowed_condition_keys = ["DateLessThan", "DateGreaterThan", "IpAddress"]
         allowed_condition_key_subkeys = {
             "DateLessThan": "AWS:EpochTime",
             "DateGreaterThan": "AWS:EpochTime",
             "IpAddress": "AWS:SourceIp",
         }
+
         try:
-            statement = policy["Statement"]
+            statements: Union[list, dict] = policy["Statement"]
         except KeyError:
             raise InvalidCustomPolicy("policy is missing Statement") from None
-        if statement:
-            try:
-                conditions = statement[0]["Condition"]
-                resource = statement[0]["Resource"]
-            except KeyError:
-                # ignore KeyError exception if statement was not placed in a list
-                pass
-            try:
-                conditions = statement["Condition"]
-                resource = statement["Resource"]
-            except KeyError:
+        if statements:
+
+            def raise_missing_condition_exception():
                 raise InvalidCustomPolicy(
-                    "missing Condition key in policy statement"
+                    "policy statement must have Condition block"
                 ) from None
+
+            if type(statements) == list:
+                statement = statements[0]
+                try:
+                    conditions = statement["Condition"]
+                    resource = statement["Resource"]
+                except KeyError:
+                    raise_missing_condition_exception()
+            elif type(statements) == dict:
+                try:
+                    conditions = statements["Condition"]
+                    resource = statements["Resource"]
+                except KeyError:
+                    raise_missing_condition_exception()
         else:
             raise InvalidCustomPolicy("policy statement is empty")
 
@@ -106,7 +114,9 @@ class Signer:
                         raise InvalidCustomPolicy(
                             f"invalid condition key sub-key found: {sub_key}"
                         )
-                    condition_key_subkey_value_type = type(conditions[key][sub_key])
+                    condition_key_subkey_value_type: type = type(
+                        conditions[key][sub_key]
+                    )
                     if (
                         sub_key == "AWS:EpochTime"
                         and condition_key_subkey_value_type != int
@@ -115,13 +125,22 @@ class Signer:
                             "AWS:EpochTime value must be of type 'int'"
                             f", not {condition_key_subkey_value_type}"
                         )
+                    else:
+                        if (
+                            sub_key == "IpAddress"
+                            and condition_key_subkey_value_type != str
+                        ):
+                            raise InvalidCustomPolicy(
+                                f"{sub_key} value must be of type 'str'"
+                                f", not {condition_key_subkey_value_type}"
+                            )
             else:
                 raise InvalidCustomPolicy(
                     "condition key value must be of type 'dict'"
                     f", not {condition_key_value_type}"
                 )
 
-        resource_type = type(resource)
+        resource_type: type = type(resource)
         if resource_type != str:
             raise TypeError(
                 f"provided Resource must be of type 'str', not '{resource_type}'"
