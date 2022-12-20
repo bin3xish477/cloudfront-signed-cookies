@@ -28,7 +28,7 @@ def test_private_key_file_not_exists():
 def test_generated_cookies_with_custom_policy():
     cookies: dict = signer.generate_cookies(
         Policy={
-            "Statment": [
+            "Statement": [
                 {
                     "Resource": "https://example.com/somefile.txt",
                     "Condition": {
@@ -46,3 +46,4 @@ def test_generated_cookies_with_custom_policy():
     )
     print(cookies)
 
+def test_invalid_custom_policy_

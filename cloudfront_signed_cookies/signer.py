@@ -6,6 +6,8 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 
+from cloudfront_signed_cookies.errors import PrivateKeyNotFound
+
 class Signer():
     HASH_ALGORITHM = 'SHA-384'
 
@@ -22,7 +24,7 @@ class Signer():
                 key_bytes = priv_file.read()
                 self.priv_key = serialization.load_pem_private_key(key_bytes, password=None)
         else:
-            raise FileNotFoundError(f"{priv_key_file} not found")
+            raise PrivateKeyNotFound(f"{priv_key_file} not found")
 
     def _sign(self, policy: str) -> bytes:
         """Generate signature from policy and the private key associated
@@ -37,6 +39,31 @@ class Signer():
             hashes.SHA384()
         )
         return signature
+    
+    def _validate_custom_policy(self):
+        """Validates custom policy for signed cookie.
+
+        Custom policy must match the following schema:
+        {
+			"Statement": [
+				{
+					"Resource": "URL of the file",
+					"Condition": {
+						"DateLessThan": {
+							"AWS:EpochTime":required ending date and time in Unix time format and UTC
+						},
+						"DateGreaterThan": {
+							"AWS:EpochTime":optional beginning date and time in Unix time format and UTC
+						},
+						"IpAddress": {
+							"AWS:SourceIp": "optional IP address"
+						}
+					}
+				}
+			]
+		} 
+        """
+        pass
 
     def _make_canned_policy(self, resource: str, expiration_date: int):
         """Returns default canned policy for signed cookies which only
@@ -55,7 +82,16 @@ class Signer():
             ]
         }
         return self._to_json(policy)
-    
+
+    def sanitize_b64(self, b64_str: str) -> str:
+        """Removes invalid characters from final base64-encoded string.
+
+        + -> -
+        = -> _
+        / -> ~
+        """
+        pass
+
     def _to_json(self, s: dict) -> str:
         """Converts dict to JSON string stripped of whitespaces."""
         return dumps(s).replace(" ", "")
