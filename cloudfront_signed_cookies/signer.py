@@ -12,14 +12,14 @@ from cloudfront_signed_cookies.errors import InvalidCustomPolicy, PrivateKeyNotF
 class Signer:
     HASH_ALGORITHM = "SHA-384"
 
-    def __init__(self, cloudfront_id: str, priv_key_file: str) -> None:
+    def __init__(self, cloudfront_key_id: str, priv_key_file: str) -> None:
         """Initializes `Signer` object.
 
         Args:
-            cloudfront_id(str): the ID assigned to the public key in CloudFront
+            cloudfront_key_id(str): the ID assigned to the public key in CloudFront
             priv_key_file(str): the path to the private PEM-formatted key
         """
-        self.cloudfront_id: str = cloudfront_id
+        self.cloudfront_key_id: str = cloudfront_key_id
         if exists(priv_key_file):
             with open(priv_key_file, mode="rb") as priv_file:
                 key_bytes = priv_file.read()
@@ -209,7 +209,7 @@ class Signer:
         cookies = {
             "CloudFront-Policy": self._sanitize_b64(encoded_policy),
             "CloudFront-Signature": self._sanitize_b64(encoded_signature),
-            "CloudFront-Key-Pair-Id": self.cloudfront_id,
+            "CloudFront-Key-Pair-Id": self.cloudfront_key_id,
         }
 
         return cookies
