@@ -222,10 +222,8 @@ class Signer:
 
         encoded_policy = str(b64encode(policy.encode("utf8")), "utf8")
         encoded_signature = str(b64encode(signature), "utf8")
-        cookies = {
+        return {
             "CloudFront-Policy": self._sanitize_b64(encoded_policy),
             "CloudFront-Signature": self._sanitize_b64(encoded_signature),
             "CloudFront-Key-Pair-Id": self.cloudfront_key_id,
         }
-
-        return cookies
