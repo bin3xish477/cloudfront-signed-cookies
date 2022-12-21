@@ -160,6 +160,3 @@ def test_for_missing_expiration_date_condition_key():
             },
             SecondsBeforeExpires=600,
         )
-
-
-
