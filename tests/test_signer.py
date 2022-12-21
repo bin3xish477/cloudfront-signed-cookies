@@ -57,6 +57,12 @@ def test_custom_policy_for_missing_statement():
         )
 
 
+def test_for_empty_resource_with_custom_policy():
+    with pytest.raises(ValueError):
+        signer.generate_cookies(
+            SecondsBeforeExpires=600,
+        )
+
 def test_custom_policy_for_incorrect_resource_type():
     with pytest.raises(InvalidCustomPolicy):
         signer.generate_cookies(
