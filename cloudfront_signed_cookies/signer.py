@@ -189,7 +189,7 @@ class Signer:
 
     def _to_json(self, s: dict) -> str:
         """Converts dict to JSON string stripped of whitespaces."""
-        return dumps(s).replace(" ", "")
+        return dumps(s, separators=(",", ":"))
 
     def generate_cookies(
         self, Resource: str = "", Policy: dict = {}, SecondsBeforeExpires: int = 900
@@ -220,8 +220,9 @@ class Signer:
             )
         signature: bytes = self._sign(policy)
 
-        encoded_policy = str(b64encode(policy.encode("utf8")), "utf8")
-        encoded_signature = str(b64encode(signature), "utf8")
+        encoded_policy = b64encode(policy.encode("utf8")).decode(encoding="utf8")
+        encoded_signature = b64encode(signature).decode(encoding="utf8")
+
         return {
             "CloudFront-Policy": self._sanitize_b64(encoded_policy),
             "CloudFront-Signature": self._sanitize_b64(encoded_signature),
