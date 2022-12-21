@@ -114,6 +114,9 @@ class Signer:
         else:
             raise InvalidCustomPolicy("policy statement is empty")
 
+        if "DateLessThan" not in conditions:
+            raise InvalidCustomPolicy("missing required condition key 'DateLessThan'")
+
         for key in conditions:
             if key not in allowed_condition_keys:
                 raise InvalidCustomPolicy(
@@ -153,7 +156,14 @@ class Signer:
                     f", not {condition_key_value_type}"
                 )
 
-        # TODO: must check if DateLessThan is greater than DateGreaterThan
+        if "DateLessThan" in conditions and "DateGreaterThan" in conditions:
+            print("DateLessThan:", conditions["DateLessThan"])
+            print("DateGreaterThan", conditions["DateGreaterThan"])
+            if (
+                conditions["DateLessThan"]["AWS:EpochTime"]
+                < conditions["DateGreaterThan"]["AWS:EpochTime"]
+            ):
+                raise InvalidCustomPolicy("'DateLessThan' cannot be less than value for 'DateGreaterThan'")
 
         resource_type: type = type(resource)
         if resource_type != str:
