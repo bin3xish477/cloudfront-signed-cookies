@@ -67,7 +67,7 @@ def test_for_empty_resource_with_custom_policy():
 def test_custom_policy_for_incorrect_resource_type():
     with pytest.raises(InvalidCustomPolicy):
         signer.generate_cookies(
-            Policy={"Statement": [{"Resource": 1}]},
+            Policy={"Statement": [{"Resource": 1, "Condition": {}}]},
             SecondsBeforeExpires=600,
         )
 

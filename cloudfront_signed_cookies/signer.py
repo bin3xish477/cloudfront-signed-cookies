@@ -114,6 +114,12 @@ class Signer:
         else:
             raise InvalidCustomPolicy("policy statement is empty")
 
+        resource_type: type = type(resource)
+        if resource_type != str:
+            raise InvalidCustomPolicy(
+                f"provided Resource must be of type 'str', not '{resource_type}'"
+            )
+
         if "DateLessThan" not in conditions:
             raise InvalidCustomPolicy("missing required condition key 'DateLessThan'")
 
@@ -164,12 +170,6 @@ class Signer:
                 raise InvalidCustomPolicy(
                     "'DateLessThan' cannot be less than value for 'DateGreaterThan'"
                 )
-
-        resource_type: type = type(resource)
-        if resource_type != str:
-            raise TypeError(
-                f"provided Resource must be of type 'str', not '{resource_type}'"
-            )
 
     def _make_canned_policy(self, resource: str, expiration_date: int):
         """Returns default canned policy for signed cookies which only
