@@ -9,7 +9,9 @@ from json import loads
 
 def create_curl_command(url: str, cookies: dict):
     print("curl --header ", end="")
-    cookies_str = f" --header ".join([f"'{k}: {v}'" for k, v in cookies.items()])
+    cookies_str = f" --header ".join(
+        [f"'Cookie: {k}={v}; Secure; HttpOnly'" for k, v in cookies.items()]
+    )
     print(f"{cookies_str}", end=" ")
     print(f"--url '{url}'")
 
@@ -32,7 +34,7 @@ def create_curl_command(url: str, cookies: dict):
 @click.option(
     "--resource", "-r", required=True, help="the URL for the resource to access"
 )
-@click.option("--policy", "-p", help="the access control policy for the signed cookies")
+@click.option("--policy", "-l", help="the access control policy for the signed cookies")
 @click.option(
     "--expires",
     "-e",
@@ -58,6 +60,6 @@ def sign(
     else:
         policy = {}
     cookies = Signer(
-        cloudfront_id=key_id, priv_key_file=priv_key_file
+        cloudfront_key_id=key_id, priv_key_file=priv_key_file
     ).generate_cookies(Resource=resource, Policy=policy, SecondsBeforeExpires=expires)
     create_curl_command(resource, cookies)

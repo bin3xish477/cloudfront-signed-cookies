@@ -15,8 +15,6 @@ from cloudfront_signed_cookies.errors import (
 
 
 class Signer:
-    HASH_ALGORITHM = "SHA-384"
-
     def __init__(self, cloudfront_key_id: str, priv_key_file: str) -> None:
         """Initializes `Signer` object.
 
@@ -24,12 +22,9 @@ class Signer:
             cloudfront_key_id(str): the ID assigned to the public key in CloudFront
             priv_key_file(str): the path to the private PEM-formatted key
         """
-        if not match(
-            r"^[0-9a-f]{8}\b-[0-9a-f]{4}\b-[0-9a-f]{4}\b-[0-9a-f]{4}\b-[0-9a-f]{12}$",
-            cloudfront_key_id,
-        ):
+        if not match(r"^[A-Z0-9]{1,}$", cloudfront_key_id):
             raise InvalidCloudFrontKeyId(
-                "CloudFront public key ID must be a UUID string"
+                "CloudFront public key ID must match the following regex: ^[A-Z0-9]{1,}$"
             )
         else:
             self.cloudfront_key_id: str = cloudfront_key_id
@@ -47,11 +42,7 @@ class Signer:
         with the public key in the CloudFront trusted key group.
         """
         signature: bytes = self.priv_key.sign(
-            data=policy.encode(),
-            padding=padding.PSS(
-                mgf=padding.MGF1(hashes.SHA384()), salt_length=padding.PSS.MAX_LENGTH
-            ),
-            algorithm=hashes.SHA384(),
+            data=policy.encode(), padding=padding.PKCS1v15(), algorithm=hashes.SHA1()
         )
         return signature
 
@@ -229,8 +220,8 @@ class Signer:
             )
         signature: bytes = self._sign(policy)
 
-        encoded_policy = b64encode(policy.encode("utf8")).decode()
-        encoded_signature = b64encode(signature).decode()
+        encoded_policy = str(b64encode(policy.encode("utf8")), "utf8")
+        encoded_signature = str(b64encode(signature), "utf8")
         cookies = {
             "CloudFront-Policy": self._sanitize_b64(encoded_policy),
             "CloudFront-Signature": self._sanitize_b64(encoded_signature),
