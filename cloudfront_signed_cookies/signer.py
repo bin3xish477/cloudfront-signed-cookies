@@ -163,7 +163,9 @@ class Signer:
                 conditions["DateLessThan"]["AWS:EpochTime"]
                 < conditions["DateGreaterThan"]["AWS:EpochTime"]
             ):
-                raise InvalidCustomPolicy("'DateLessThan' cannot be less than value for 'DateGreaterThan'")
+                raise InvalidCustomPolicy(
+                    "'DateLessThan' cannot be less than value for 'DateGreaterThan'"
+                )
 
         resource_type: type = type(resource)
         if resource_type != str:

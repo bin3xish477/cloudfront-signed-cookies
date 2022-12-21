@@ -144,6 +144,7 @@ def test_for_invalid_custom_policy_date_range():
             SecondsBeforeExpires=600,
         )
 
+
 def test_for_missing_expiration_date_condition_key():
     with pytest.raises(InvalidCustomPolicy):
         signer.generate_cookies(
@@ -159,3 +160,6 @@ def test_for_missing_expiration_date_condition_key():
             },
             SecondsBeforeExpires=600,
         )
+
+
+
