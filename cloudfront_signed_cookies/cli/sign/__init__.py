@@ -8,7 +8,7 @@ from json import loads
 
 
 def create_curl_command(url: str, cookies: dict):
-    print("curl --header ", end="")
+    print("curl --silent --header ", end="")
     cookies_str = f" --header ".join(
         [f"'Cookie: {k}={v}; Secure; HttpOnly'" for k, v in cookies.items()]
     )
