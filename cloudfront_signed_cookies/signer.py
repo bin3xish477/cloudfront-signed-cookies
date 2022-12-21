@@ -152,7 +152,7 @@ class Signer:
                     "condition key value must be of type 'dict'"
                     f", not {condition_key_value_type}"
                 )
-        
+
         # TODO: must check if DateLessThan is greater than DateGreaterThan
 
         resource_type: type = type(resource)

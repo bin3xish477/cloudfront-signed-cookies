@@ -126,6 +126,7 @@ def test_for_invalid_cloudfront_key_id():
             cloudfront_key_id="134041ajfdfadf0", priv_key_file="./certs/private_key.pem"
         )
 
+
 def test_for_invalid_custom_policy_date_ranges():
     with pytest.raises(InvalidCustomPolicy):
         signer.generate_cookies(
@@ -134,12 +135,8 @@ def test_for_invalid_custom_policy_date_ranges():
                     {
                         "Resource": "URL",
                         "Condition": {
-                            "DateLessThan": {
-                                "AWS:EpochTime": 10010
-                            },
-                            "DateGreaterThan": {
-                                "AWS:EpochTime": 1000
-                            }
+                            "DateLessThan": {"AWS:EpochTime": 10010},
+                            "DateGreaterThan": {"AWS:EpochTime": 1000},
                         },
                     }
                 ]
