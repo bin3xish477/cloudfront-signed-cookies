@@ -157,8 +157,6 @@ class Signer:
                 )
 
         if "DateLessThan" in conditions and "DateGreaterThan" in conditions:
-            print("DateLessThan:", conditions["DateLessThan"])
-            print("DateGreaterThan", conditions["DateGreaterThan"])
             if (
                 conditions["DateLessThan"]["AWS:EpochTime"]
                 < conditions["DateGreaterThan"]["AWS:EpochTime"]
