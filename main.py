@@ -19,6 +19,6 @@ if __name__ == "__main__":
         },
         SecondsBeforeExpires=3600,
     )
-    # print(cookies)
-    cookie_str = "; ".join([f"{k}: {v}" for k, v in cookies.items()])
-    print(f"Set-Cookie: {cookie_str}")
+    print(cookies)
+    #cookie_str = "; ".join([f"{k}: {v}" for k, v in cookies.items()])
+    #print(f"Set-Cookie: {cookie_str}")

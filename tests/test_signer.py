@@ -127,7 +127,7 @@ def test_for_invalid_cloudfront_key_id():
         )
 
 
-def test_for_invalid_custom_policy_date_ranges():
+def test_for_invalid_custom_policy_date_range():
     with pytest.raises(InvalidCustomPolicy):
         signer.generate_cookies(
             Policy={
@@ -136,6 +136,22 @@ def test_for_invalid_custom_policy_date_ranges():
                         "Resource": "URL",
                         "Condition": {
                             "DateLessThan": {"AWS:EpochTime": 10010},
+                            "DateGreaterThan": {"AWS:EpochTime": 10020},
+                        },
+                    }
+                ]
+            },
+            SecondsBeforeExpires=600,
+        )
+
+def test_for_missing_expiration_date_condition_key():
+    with pytest.raises(InvalidCustomPolicy):
+        signer.generate_cookies(
+            Policy={
+                "Statement": [
+                    {
+                        "Resource": "URL",
+                        "Condition": {
                             "DateGreaterThan": {"AWS:EpochTime": 1000},
                         },
                     }
