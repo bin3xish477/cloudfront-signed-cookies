@@ -63,6 +63,7 @@ def test_for_empty_resource_with_custom_policy():
             SecondsBeforeExpires=600,
         )
 
+
 def test_custom_policy_for_incorrect_resource_type():
     with pytest.raises(InvalidCustomPolicy):
         signer.generate_cookies(
@@ -123,4 +124,25 @@ def test_for_invalid_cloudfront_key_id():
     with pytest.raises(InvalidCloudFrontKeyId):
         Signer(
             cloudfront_key_id="134041ajfdfadf0", priv_key_file="./certs/private_key.pem"
+        )
+
+def test_for_invalid_custom_policy_date_ranges():
+    with pytest.raises(InvalidCustomPolicy):
+        signer.generate_cookies(
+            Policy={
+                "Statement": [
+                    {
+                        "Resource": "URL",
+                        "Condition": {
+                            "DateLessThan": {
+                                "AWS:EpochTime": 10010
+                            },
+                            "DateGreaterThan": {
+                                "AWS:EpochTime": 1000
+                            }
+                        },
+                    }
+                ]
+            },
+            SecondsBeforeExpires=600,
         )
