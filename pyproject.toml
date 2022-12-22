@@ -31,8 +31,7 @@ dynamic = ["version"]
 
 [project.urls]
 Documentation = "https://github.com/unknown/cloudfront-signed-cookies#readme"
-Issues = "https://github.com/unknown/cloudfront-signed-cookies/issues"
-Source = "https://github.com/unknown/cloudfront-signed-cookies"
+Source = "https://github.com/bin3xish477/cloudfront-signed-cookies"
 
 [tool.hatch.version]
 path = "cloudfront_signed_cookies/__about__.py"
