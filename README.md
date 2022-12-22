@@ -31,7 +31,6 @@ def main():
     )
 
     cookies: dict = signer.generate_cookies(
-        Resource="https://s3.amazonaws.com/somefile.txt",
         Policy={
             "Statement": [
                 {
