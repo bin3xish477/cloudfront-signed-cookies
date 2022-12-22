@@ -7,7 +7,7 @@ if __name__ == "__main__":
     )
 
     cookies: dict = signer.generate_cookies(
-        Resource="https://s3.amazonaws.com/somefile.txt",
+        # Resource="https://s3.amazonaws.com/somefile.txt",
         # Policy={},
         Policy={
             "Statement": [
