@@ -19,12 +19,6 @@
 pip install cloudfront-signed-cookies
 ```
 
-## CloudFront Signed Cookies in Action
-
-Attempting to access a file behind a CloudFront distribution protected by the **Restricted Viewer Access** feature will result in an `MissingKey` error if a signed URL or signed cookie is not provided as shown in the following image:
-
-![missing-key-cookie-error](/images/missing-key-cookie-error.png)
-
 ## Usage
 
 ```python
