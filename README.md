@@ -6,6 +6,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 -----
+**IF YOU'RE INTERESTED**, go checkout my [Medium blog post](https://bin3xish477.medium.com/creating-cloudfront-signed-cookies-c51464c84c97) for a deeper dive on what this package is doing and some usage examples.
 
 **Table of Contents**
 
