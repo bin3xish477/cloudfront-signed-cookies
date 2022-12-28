@@ -11,6 +11,7 @@ from cloudfront_signed_cookies.errors import (
     InvalidCloudFrontKeyId,
     InvalidCustomPolicy,
     PrivateKeyNotFound,
+    InvalidPrivateKeyFormat,
 )
 
 
@@ -31,9 +32,12 @@ class Signer:
         if exists(priv_key_file):
             with open(priv_key_file, mode="rb") as priv_file:
                 key_bytes = priv_file.read()
-                self.priv_key = serialization.load_pem_private_key(
-                    key_bytes, password=None
-                )
+                try:
+                    self.priv_key = serialization.load_pem_private_key(
+                        key_bytes, password=None
+                    )
+                except ValueError:
+                    raise InvalidPrivateKeyFormat("provided private key is not formatted correctly")
         else:
             raise PrivateKeyNotFound(f"{priv_key_file} not found")
 

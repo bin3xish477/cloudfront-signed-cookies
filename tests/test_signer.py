@@ -4,6 +4,7 @@ from cloudfront_signed_cookies.signer import Signer
 from cloudfront_signed_cookies.errors import (
     InvalidCustomPolicy,
     PrivateKeyNotFound,
+    InvalidPrivateKeyFormat,
     InvalidCloudFrontKeyId,
 )
 
@@ -160,4 +161,12 @@ def test_for_missing_expiration_date_condition_key():
                 ]
             },
             SecondsBeforeExpires=600,
+        )
+
+
+def test_invalid_pem_key_formatted_file():
+    with pytest.raises(InvalidPrivateKeyFormat):
+        Signer(
+            cloudfront_key_id="K36X4X2EO997HM",
+            priv_key_file="./certs/invalid_private_key.pem",
         )

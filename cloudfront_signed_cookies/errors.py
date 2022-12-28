@@ -4,6 +4,11 @@ class PrivateKeyNotFound(Exception):
     pass
 
 
+class InvalidPrivateKeyFormat(Exception):
+    """Raised when the provided private key is not correctly formatted"""
+    pass
+
+
 class InvalidCustomPolicy(Exception):
     """Raised when custom policy dict does not contain valid keys/values"""
 
