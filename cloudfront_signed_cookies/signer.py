@@ -37,7 +37,9 @@ class Signer:
                         key_bytes, password=None
                     )
                 except ValueError:
-                    raise InvalidPrivateKeyFormat("provided private key is not formatted correctly")
+                    raise InvalidPrivateKeyFormat(
+                        "provided private key is not formatted correctly"
+                    )
         else:
             raise PrivateKeyNotFound(f"{priv_key_file} not found")
 

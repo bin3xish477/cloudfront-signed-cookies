@@ -6,6 +6,7 @@ class PrivateKeyNotFound(Exception):
 
 class InvalidPrivateKeyFormat(Exception):
     """Raised when the provided private key is not correctly formatted"""
+
     pass
 
 
