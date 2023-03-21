@@ -20,10 +20,10 @@ def create_curl_command(url: str, cookies: dict):
 @click.option(
     "--priv-key",
     "-p",
-    "priv_key_file",
+    "private_key",
     type=str,
     required=True,
-    help="the path to the private key file",
+    help="the path to the private key file, or raw value of the private key",
 )
 @click.option(
     "--key-id",
@@ -44,7 +44,7 @@ def create_curl_command(url: str, cookies: dict):
 @click.pass_context
 def sign(
     ctx: click.Context,
-    priv_key_file: str,
+    private_key: str,
     key_id: str,
     resource: str,
     policy,
@@ -60,6 +60,6 @@ def sign(
     else:
         policy = {}
     cookies = Signer(
-        cloudfront_key_id=key_id, priv_key_file=priv_key_file
+        cloudfront_key_id=key_id, private_key=private_key
     ).generate_cookies(Resource=resource, Policy=policy, SecondsBeforeExpires=expires)
     create_curl_command(resource, cookies)

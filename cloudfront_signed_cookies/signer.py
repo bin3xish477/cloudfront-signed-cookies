@@ -16,7 +16,7 @@ from cloudfront_signed_cookies.errors import (
 
 
 class Signer:
-    def __init__(self, cloudfront_key_id: str, priv_key_file: str) -> None:
+    def __init__(self, cloudfront_key_id: str, private_key: str) -> None:
         """Initializes `Signer` object.
 
         Args:
@@ -29,8 +29,8 @@ class Signer:
             )
         else:
             self.cloudfront_key_id: str = cloudfront_key_id
-        if exists(priv_key_file):
-            with open(priv_key_file, mode="rb") as priv_file:
+        if exists(private_key):
+            with open(private_key, mode="rb") as priv_file:
                 key_bytes = priv_file.read()
                 try:
                     self.priv_key = serialization.load_pem_private_key(
@@ -40,8 +40,18 @@ class Signer:
                     raise InvalidPrivateKeyFormat(
                         "provided private key is not formatted correctly"
                     )
+        elif type(private_key) is str:
+            key_bytes = bytes(private_key),'utf-8')
+            try:
+                self.priv_key = serialization.load_pem_private_key(
+                    key_bytes, password=None
+                )
+            except ValueError:
+                raise InvalidPrivateKeyFormat(
+                    "provided private key is not formatted correctly"
+                )
         else:
-            raise PrivateKeyNotFound(f"{priv_key_file} not found")
+            raise PrivateKeyNotFound(f"{private_key} not found")
 
     def _sign(self, policy: str) -> bytes:
         """Generate signature from policy and the private key associated

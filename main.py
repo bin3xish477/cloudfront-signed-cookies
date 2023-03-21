@@ -3,7 +3,7 @@ from cloudfront_signed_cookies.signer import Signer
 if __name__ == "__main__":
     signer = Signer(
         cloudfront_key_id="K36X4X2EO997HM",
-        priv_key_file="./certs/private_key.pem",
+        private_key="./certs/private_key.pem",
     )
 
     cookies: dict = signer.generate_cookies(
