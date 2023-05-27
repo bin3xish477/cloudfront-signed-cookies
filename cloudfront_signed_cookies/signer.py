@@ -41,7 +41,7 @@ class Signer:
                         "provided private key is not formatted correctly"
                     )
         elif type(private_key) is str:
-            key_bytes = bytes(private_key),'utf-8')
+            key_bytes = bytes(private_key, "utf-8")
             try:
                 self.priv_key = serialization.load_pem_private_key(
                     key_bytes, password=None
