@@ -24,11 +24,27 @@ pip install cloudfront-signed-cookies
 
 ```python
 from cloudfront_signed_cookies.signer import Signer
+import os
 
 def main():
+    """
+    Method #1
+    Allow the signer to read your key from a file
+    """
     signer: Signer = Signer(
         cloudfront_key_id="K36X4X2EO997HM",
-        priv_key_file="./certs/private_key.pem",
+        private_key="./certs/private_key.pem",
+    )
+
+    """
+    Method #2
+    Alternatively you can pass the raw contents of the key in from
+    something such as an environment variable, for container (Docker)
+    based usage
+    """
+    signer: Signer = Signer(
+        cloudfront_key_id="K36X4X2EO997HM",
+        private_key=os.environ.get("PRIVATE_KEY")
     )
 
     cookies: dict = signer.generate_cookies(
